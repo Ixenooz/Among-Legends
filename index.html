@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create/Join Lobby</title>
+</head>
+<body>
+    <div id="createLobbyForm">
+        <input type="text" id="createLobbyUsername" placeholder="Your username">
+        <button id="createLobbyButton">Create a lobby</button>
+    </div>
+
+    <div id="joinLobbyForm">
+        <input type="text" id="joinLobbyUsername" placeholder="Your username">
+        <input type="text" id="joinLobbyName" placeholder="Lobby name">
+        <button id="joinLobbyButton">Join a lobby</button>
+    </div>
+
+    <div id="lobbyList">
+        <h3>Available Lobbies:</h3>
+        <ul id="lobbyNames"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Function to handle create lobby button click event
+        function createLobby() {
+            const username = document.getElementById('createLobbyUsername').value.trim();
+            if (username !== '') {
+                socket.emit('createLobby', { username });
+            } else {
+                alert('Please enter a valid username.');
+            }
+        }
+
+        // Function to handle join lobby button click event
+        function joinLobby() {
+            const username = document.getElementById('joinLobbyUsername').value.trim();
+            const lobbyName = document.getElementById('joinLobbyName').value.trim();
+            if (username !== '' && lobbyName !== '') {
+                socket.emit('joinLobby', { username, lobbyName });
+            } else {
+                alert('Please enter a valid username and lobby name.');
+            }
+        }
+
+        // Attach click event listener to the create lobby button
+        document.getElementById('createLobbyButton').addEventListener('click', createLobby);
+
+        // Attach click event listener to the join lobby button
+        document.getElementById('joinLobbyButton').addEventListener('click', joinLobby);
+
+        // Listen for lobby names from server and display them
+        socket.on('lobbyNames', (lobbyNames) => {
+            const lobbyNamesList = document.getElementById('lobbyNames');
+            lobbyNamesList.innerHTML = '';
+            lobbyNames.forEach(lobbyName => {
+                const listItem = document.createElement('li');
+                listItem.textContent = lobbyName;
+                lobbyNamesList.appendChild(listItem);
+            });
+        });
+
+        // Handle redirection to lobby page
+        socket.on('redirect', ({ url }) => {
+            window.location.href = url;
+        });
+    </script>
+</body>
+</html>
